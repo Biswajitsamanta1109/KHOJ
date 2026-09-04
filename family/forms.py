@@ -52,7 +52,7 @@ class MissingPersonForm(forms.ModelForm):
 
     # age: must be between 1 and 100, no decimals and no negatives
     def clean_age(self):
-        age = self.cleaned_data.get('age')
+        age = self.cleaned_data.get('age') #cleaned_data is a dictionary containing the validated form data. The get('age') method retrieves the value of the 'age' field from this dictionary. If the field is not present, it returns None.
         if age is None:
             raise forms.ValidationError("Age is required.")
         if age < 1 or age > 100:
@@ -93,11 +93,11 @@ class CaseUpdateForm(forms.ModelForm):
 
     class Meta:
         model = CaseUpdate
-        fields = ['note', 'optional_image']
+        fields = ['note', 'optional_image'] #fields specifies which fields from the CaseUpdate model should be included in the form. In this case, we are including the 'note' and 'optional_image' fields, allowing users to add textual updates and optionally upload an image related to the case.
         widgets = {
             'note': forms.Textarea(attrs={
                 'class': 'form-control', 'rows': 4,
                 'placeholder': 'Enter any new information, clue, or search progress...'
             }),
-            'optional_image': forms.FileInput(attrs={'class': 'form-control'}),
+            'optional_image': forms.FileInput(attrs={'class': 'form-control'}),  #form-control class is used to style the file input field, making it consistent with other form elements in the application.
         }

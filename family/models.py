@@ -78,7 +78,7 @@ class MissingPerson(models.Model):
     last_seen_date = models.DateField()
 
     # photos - both required
-    passport_photo = models.ImageField(upload_to='missing/passport/')
+    passport_photo = models.ImageField(upload_to='missing/passport/') #missing/passport/ is the folder where the passport photo will be stored in the media directory.which is presently set to /media/ in settings.py. So the full path will be /media/missing/passport/
     full_body_photo = models.ImageField(upload_to='missing/fullbody/')
 
     # kept for compatibility - old contact_number field
@@ -89,8 +89,8 @@ class MissingPerson(models.Model):
     police_station_name = models.CharField(max_length=200, blank=True)
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACTIVE')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True) #auto_now_add=True means that the field will be set to the current date and time when the object is first created. It will not change on subsequent updates.
+    updated_at = models.DateTimeField(auto_now=True) #auto_now=True means that the field will be set to the current date and time every time the object is saved. It will update on subsequent updates.
 
     def __str__(self):
         return f"{self.person_name} - {self.district} ({self.status})"
@@ -102,11 +102,11 @@ class MissingPerson(models.Model):
 class CaseUpdate(models.Model):
     """Private notes/clues added by the family. Not public sightings."""
 
-    linked_missing_person = models.ForeignKey(
+    linked_missing_person = models.ForeignKey( # linked_missing_person is a ForeignKey to the MissingPerson model. This means that each CaseUpdate is associated with one MissingPerson. The on_delete=models.CASCADE argument means that if the linked MissingPerson is deleted, all associated CaseUpdates will also be deleted. The related_name='case_updates' argument allows us to access all CaseUpdates for a given MissingPerson using missing_person.case_updates.all().
         MissingPerson, on_delete=models.CASCADE, related_name='case_updates'    # related_name for reverse ForeignKey lookup, so we can move from MissingPerson -> CaseUpdate (Opposite of where the FK was defined).
     )
     note = models.TextField()
-    optional_image = models.ImageField(upload_to='updates/', blank=True, null=True)
+    optional_image = models.ImageField(upload_to='updates/', blank=True, null=True) #optional_image is an ImageField that allows the family to upload an optional image related to the case update. The upload_to='updates/' argument specifies that the image will be stored in the 'updates/' directory within the media directory. The blank=True and null=True arguments allow this field to be optional, meaning that a CaseUpdate can be created without an image.
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

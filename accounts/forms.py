@@ -22,7 +22,7 @@ class FamilyRegistrationForm(forms.ModelForm):
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'})
     )
 
-    class Meta:
+    class Meta: 
         model = KhojUser
         fields = ['full_name', 'email']
         widgets = {

@@ -12,17 +12,17 @@ from notifications.models import Notification
 
 def family_required(view_func): # view_func is a parameter representing the original Django view function that we put the decorator on top of. So,view_func holds the actual web page code that should only be executed if the user passes security checks.
     @login_required # CHECK 1 : User is logged in or not (if yes,then move to check 2)
-    @wraps(view_func) # Identity Preservation : Ensures the original view function's metadata is preserved
+    @wraps(view_func) # Identity Preservation : Ensures the original view function's metadata is preserved,---->means that the decorated function retains the original function's name, docstring, and other attributes. This is important for debugging, introspection, and maintaining the integrity of the view function's identity.
     def wrapper(request, *args, **kwargs): # diff views have diff parameters so we use *args and **kwargs to smoothly handle them
         if request.user.role != 'FAMILY': # CHECK 2 : User is family or not
             messages.error(request, "Access denied. This section is for family users only.")
             return redirect('dashboard')
-        return view_func(request, *args, **kwargs)
+        return view_func(request, *args, **kwargs) #view_func is the original view function that was decorated. If the user passes both checks, this line calls the original view function, passing along the request and any additional arguments (*args and **kwargs) that were provided to the wrapper. This allows the original view to execute as intended, now that the user has been verified as a logged-in family member.
     return wrapper
 
-# ------------------------ Family Views ------------------------------------------------------------------
+# ---------------------------------------- Family Views --------------------------------------------------
 
-@family_required
+@family_required #it checks if the user is logged in and has the role of 'FAMILY' before allowing access to the dashboard view. If the user fails either check, they are redirected to the appropriate page (login or dashboard) with an error message.
 def dashboard(request):
     """Family dashboard: overview of reports and matches."""
     user = request.user # extracting the current logged-in user
@@ -86,7 +86,7 @@ def report_detail(request, pk): # pk-> primary key of the report,received via UR
     """View a single missing person report and its updates."""
     report = get_object_or_404(MissingPerson, pk=pk, linked_family_user=request.user) # linked_family_user=request.user to ensure ownership and prevent unauthorized access to other users' reports.(RBAC)
     updates = report.case_updates.all() # reverse foreign key lookup for all case updates of current report, For that we move: MissingPerson -> CaseUpdate, to fetch all related updates.
-    matches = MatchResult.objects.filter(missing_person=report).exclude(status='REJECTED').order_by('-confidence_score') 
+    matches = MatchResult.objects.filter(missing_person=report).exclude(status='REJECTED').order_by('-confidence_score')  # matchresults for this report, excluding rejected ones, sorted by confidence score in descending order.
 
     context = {
         'report': report,
@@ -119,7 +119,7 @@ def add_case_update(request, pk):
     return render(request, 'family/add_case_update.html', {'form': form, 'report': report})
 
 @family_required
-def delete_case_update(request, pk):
+def delete_case_update(request, pk): #delete_case_update is a view function that allows a family user to delete one of their own case updates. It ensures that only POST requests can delete updates, preventing accidental deletions via GET requests. The function first verifies that the update belongs to the logged-in user by checking the linked_missing_person's linked_family_user. If the update is found and the request method is POST, it deletes the update and redirects back to the report detail page.
     """
     Family user deletes one of their own case updates.
     Only POST allowed — no accidental deletions via GET.
@@ -148,7 +148,7 @@ def my_matches(request):
     matches = MatchResult.objects.filter(
         missing_person__linked_family_user=user # Go to the MatchResult model, look up the connected MissingPerson report, check if that report's linked_family_user matches our current logged-in user, and if it matches, return all MatchResult details for that user.
     ).exclude(
-        status='REJECTED'
+        status='REJECTED' # Exclude matches that the user has already rejected, so they don't see them again in their potential matches list.
     ).order_by('-confidence_score')
 
     # Mark notifications as read

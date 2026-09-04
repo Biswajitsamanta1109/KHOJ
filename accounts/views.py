@@ -89,7 +89,7 @@ def login_hospital(request):
     if request.method == 'POST':
         form = HospitalLoginForm(request.POST)
         if form.is_valid():
-            staff_id = form.cleaned_data['staff_id']
+            staff_id = form.cleaned_data['staff_id'] 
             password = form.cleaned_data['password']
 
             # StaffIDBackend handles the lookup by staff_id

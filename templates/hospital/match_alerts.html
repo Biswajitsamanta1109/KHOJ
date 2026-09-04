@@ -141,7 +141,7 @@
           <span class="text-muted fw-normal ms-1">(factors that contributed to this match)</span>
         </div>
 
-        {% if match.score_breakdown %}
+        {% if match.score_breakdown %} #match.score_breakdown is a dict with keys: gender, blood_group, age, height, district, marks, clothing, face_match, eye_color, hair_color, skin_tone, weight
         <div class="table-responsive">
           <table class="table table-sm align-middle mb-0" style="font-size:0.82rem;">
             <thead>
@@ -153,7 +153,7 @@
               </tr>
             </thead>
             <tbody>
-              {% with b=match.score_breakdown %}
+              {% with b=match.score_breakdown %} #with b=match.score_breakdown to simplify variable access
               <tr>
                 <td><i class="bi bi-gender-ambiguous me-1 text-muted"></i>Gender</td>
                 <td class="text-center text-muted">20</td>

@@ -61,10 +61,10 @@ def regional_cases(request):
     # all patients (both UNIDENTIFIED and IDENTIFIED) in the district
     # police should see all, not just active ones
     patients = UnidentifiedPatient.objects.filter(
-        Q(district__iexact=district) | Q(found_location__icontains=district)
+        Q(district__iexact=district) | Q(found_location__icontains=district) #this query is to catch cases where the district field might be empty but the found location mentions the district,police can only see cases in their district, so this is a safety measure
     ).order_by('-admission_date')
 
-    query = request.GET.get('q', '').strip()
+    query = request.GET.get('q', '').strip() #this query is for searching by estimated name or found location, it is case-insensitive and will match any part of the string
     if query:
         patients = patients.filter(
             Q(estimated_name__icontains=query) |
@@ -77,7 +77,7 @@ def regional_cases(request):
     if status_filter in ('UNIDENTIFIED', 'IDENTIFIED'):
         patients = patients.filter(status=status_filter)
 
-    return render(request, 'police/regional_cases.html', {
+    return render(request, 'police/regional_cases.html', { #this dictionary is passed to the template, it contains the list of patients, the district, the search query, and the status filter,search query and status filter are used to maintain the state of the search form in the template
         'patients': patients,
         'district': district,
         'query': query,
@@ -101,7 +101,7 @@ def case_detail(request, pk):
 
     return render(request, 'police/case_detail.html', {
         'patient': patient,
-        'out_of_jurisdiction': out_of_jurisdiction,
+        'out_of_jurisdiction': out_of_jurisdiction, #this variable is used in the template to show a warning message if the patient is outside the officer's district, it is a soft warning because police can still view the case, but they should be aware that it is not in their jurisdiction
     })
 
 
@@ -114,13 +114,13 @@ def nearby_matches(request):
     profile = request.user.police_profile
     district = profile.district
 
-    matches = MatchResult.objects.filter(
-        Q(missing_person__district__iexact=district) |
+    matches = MatchResult.objects.filter(  #matches return the value when missing person or unidentified patient is in the officer's district, this is important because police can only follow up on cases in their jurisdiction, so we filter by district to ensure they only see relevant matches
+        Q(missing_person__district__iexact=district) |  
         Q(unidentified_patient__district__iexact=district)
     ).exclude(status='REJECTED').order_by('-confidence_score')
 
     return render(request, 'police/nearby_matches.html', {
-        'matches': matches,
+        'matches': matches, 
         'district': district,
     })
 
