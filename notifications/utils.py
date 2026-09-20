@@ -7,7 +7,8 @@ POLICE receive no notifications (by design).
 Called from matching/signals.py after new matches are found.
 
 CORE LOGIC :
-USE OF UTILS is that : it provides a centralized way to create notifications without duplicating code across the application. Or else, we would have to write the same notification creation logic in multiple places, increasing the risk of errors and making maintenance more difficult.
+USE OF UTILS is that : it provides a centralized way to create notifications without duplicating code across the application.
+Or else, we would have to write the same notification creation logic in multiple places, increasing the risk of errors and making maintenance more difficult.
 This promotes DRY (Don't Repeat Yourself) principles and makes the codebase cleaner and easier to manage.
 Its Implementation is straightforward: simply call the appropriate utility function with the necessary parameters, and it handles the rest.
 
@@ -18,6 +19,7 @@ from .models import Notification # Importing the Notification model for creating
 
 def create_match_notifications(missing_person=None, unidentified_patient=None): # Create notifications for new matches
     """
+    
     Creates a notification for the relevant party when new matches are found.
 
     - missing_person: notify the linked family user

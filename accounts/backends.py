@@ -52,7 +52,7 @@ class StaffIDBackend(ModelBackend):
         try:
             from accounts.models import HospitalProfile
             profile = HospitalProfile.objects.select_related('user').get(staff_id=username)
-            user = profile.user # Get the linked user object from HospitalProfile 
+            user = profile.user # Get the linked user object means khojuser object is linked to hospital profile object via OneToOneField. So, we can access the user object from the profile object using profile.user.
         except Exception:
             User().set_password(password) # This is a timing attack prevention trick.
             return None # # return None = authentication failed, so Django will try next backend.

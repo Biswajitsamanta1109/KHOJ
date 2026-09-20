@@ -92,7 +92,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # all three backends registered - Django tries them in order
 # Family logs in by email, Hospital by staff_id, Police by police_id
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.EmailBackend',
+    'accounts.backends.EmailBackend', # EmailBackend is a custom authentication backend that allows users to log in using their email address instead of a username. It is used for Family users who only have an email for login.
     'accounts.backends.StaffIDBackend',
     'accounts.backends.PoliceIDBackend',
 ]

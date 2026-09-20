@@ -9,9 +9,9 @@
     <div class="list-group-item list-group-item-action py-3 {% if not notif.is_read %}bg-light{% endif %}">
       <div class="d-flex justify-content-between align-items-start">
         <div>
-          {% if notif.notif_type == 'MATCH_FOUND' %}
+          {% if notif.notif_type == 'MATCH_FOUND' %} #match found meansthere is a ralationship between the patient and the user related to the patient
           <i class="bi bi-diagram-3 text-warning me-2"></i>
-          {% elif notif.notif_type == 'PATIENT_IDENTIFIED' %}
+          {% elif notif.notif_type == 'PATIENT_IDENTIFIED' %} #patient identified means the patient has been identified by the user related to the patient
           <i class="bi bi-check-circle text-success me-2"></i>
           {% else %}
           <i class="bi bi-bell text-primary me-2"></i>

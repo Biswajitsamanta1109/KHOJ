@@ -14,7 +14,7 @@ from django.db import models
 
 # Custom manager for KhojUser -> This manager knows how to create KhojUser objects correctly.
 # KhojUserManager will use the BLUEPRINT(KhojUser) to create KhojUser instances but validate,hash,save etc all done in KhojUserManager.
-class KhojUserManager(BaseUserManager):
+class KhojUserManager(BaseUserManager): #khojUserManager inherits from BaseUserManager which is a built-in Django class that provides basic user management functionality. We are extending it to customize user creation for our specific needs.our need is to create a user with email, full_name, role and password.
     """Custom manager for KhojUser."""
 
     def create_user(self, email, full_name, role, password=None, **extra_fields):
@@ -56,14 +56,14 @@ class KhojUser(AbstractBaseUser, PermissionsMixin):
 
     # Override PermissionsMixin M2M fields to set unique related_names
     # To avoid Clash with Django's default User and our KhojUser in the same project.
-    groups = models.ManyToManyField(
+    groups = models.ManyToManyField( #groups is a many-to-many relationship field that allows each KhojUser to be associated with multiple groups, and each group can have multiple users. This is useful for managing permissions and access control in the application.
         'auth.Group', 
         blank=True,
         related_name='khojuser_set', # custom name to avoid clash with default User model
         related_query_name='khojuser', 
         verbose_name='groups',
     )
-    user_permissions = models.ManyToManyField(
+    user_permissions = models.ManyToManyField( #user_permissions is a many-to-many relationship field that allows each KhojUser to be associated with multiple permissions, and each permission can be assigned to multiple users. This is useful for fine-grained access control in the application.
         'auth.Permission',
         blank=True,
         related_name='khojuser_set',
@@ -75,7 +75,7 @@ class KhojUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['full_name']
 
     objects = KhojUserManager() # connecting KhojUserManager to KhojUser i.e, internally its is KhojUserManager.model = KhojUser 
-
+    #khojUserManager is the manager for KhojUser model. It provides methods to create users and superusers, and it handles the logic for saving users to the database. By setting objects = KhojUserManager(), we are telling Django to use our custom manager for this model.and it will create a user with email, full_name, role and password.
     def __str__(self):
         return f"{self.full_name} ({self.role})"
 

@@ -21,16 +21,16 @@ class FamilyRegistrationForm(forms.ModelForm):
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'})
     )
-
-    class Meta: 
+    
+    class Meta:  #meta class is used to provide metadata to the form, like which model it is associated with and which fields to include in the form.
         model = KhojUser
-        fields = ['full_name', 'email']
+        fields = ['full_name', 'email'] #fields to be included in the form. We are including full_name and email fields from the KhojUser model.
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
         }
     # Validating email uniqueness
-    def clean_email(self):
+    def clean_email(self): 
         email = self.cleaned_data.get('email')
         if KhojUser.objects.filter(email=email).exists(): # checking if email is already in use(that is, if a user with this email already exists in our backend DB)
             raise forms.ValidationError("An account with this email already exists.")
@@ -53,7 +53,7 @@ class FamilyRegistrationForm(forms.ModelForm):
         return user
 
 
-# ── HOSPITAL REGISTRATION ──────────────
+# ── HOSPITAL REGISTRATION ────────────── 
 
 class HospitalRegistrationForm(forms.Form): 
     # plain forms.Form is used for hospital and police registration but for family we are using ModelForm, because ModelForm can target only 1 model at a time but for hospital and police we need to handle 2 diff DB tables : 1 to store personal user info and 1 to store profile info

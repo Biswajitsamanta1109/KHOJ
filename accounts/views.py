@@ -43,7 +43,7 @@ def about(request):
     return render(request, 'accounts/about.html')
 
 # ---- Registration choice page ----
-def register_choice(request):
+def register_choice(request): 
     """User picks which role they are before seeing the registration form."""
     return render(request, 'accounts/register_choice.html')
 
@@ -59,11 +59,11 @@ def login_choice(request):
 # ----- Family login ----
 def login_family(request):
     """Family login - uses email + password."""
-    if request.user.is_authenticated:
+    if request.user.is_authenticated: #requested user is already logged in, redirect to dashboard
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = KhojLoginForm(request, data=request.POST)
+        form = KhojLoginForm(request, data=request.POST) #form is getting populated with the data from the POST request
         if form.is_valid():
             user = form.get_user()
             if user.role != 'FAMILY':
@@ -145,7 +145,7 @@ def logout_view(request):
 
 # --- Family registration ---
 def register_family(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated: # if the user is already logged in, redirect to dashboard
         return redirect('dashboard')
 
     if request.method == 'POST':
