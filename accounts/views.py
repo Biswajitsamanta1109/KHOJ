@@ -6,12 +6,11 @@ Login :
 Each role uses a different identifier to log in:
   Family   -> email + password
   Hospital -> staff_id + password
-  Police   -> police_id + password
 
 Registration :
  Family users will see -> the FamilyRegistrationForm,
- hospital staff will see -> the HospitalRegistrationForm, 
- police officers will see -> the PoliceRegistrationForm.
+ hospital staff will see -> the HospitalRegistrationForm,
+
 
 """
 
@@ -23,10 +22,8 @@ from django.contrib import messages
 from .forms import (
     FamilyRegistrationForm,
     HospitalRegistrationForm,
-    PoliceRegistrationForm,
     KhojLoginForm,
     HospitalLoginForm,
-    PoliceLoginForm,
 )
 
 # --- Home page ----
@@ -43,7 +40,7 @@ def about(request):
     return render(request, 'accounts/about.html')
 
 # ---- Registration choice page ----
-def register_choice(request): 
+def register_choice(request):
     """User picks which role they are before seeing the registration form."""
     return render(request, 'accounts/register_choice.html')
 
@@ -59,18 +56,19 @@ def login_choice(request):
 # ----- Family login ----
 def login_family(request):
     """Family login - uses email + password."""
-    if request.user.is_authenticated: #requested user is already logged in, redirect to dashboard
+    if request.user.is_authenticated:
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = KhojLoginForm(request, data=request.POST) #form is getting populated with the data from the POST request
+        form = KhojLoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
+            # NOTE : We are not explicitly writting `user=authenticate(request,username=...,password=...)` as KhojLoginForm inherits AuthenticationForm in forms.py;so its handled in forms.is_valid() check only
             if user.role != 'FAMILY':
                 messages.error(request, "This login page is for family users only.")
                 return redirect('login_family')
             # backend must be specified when multiple backends are configured
-            login(request, user, backend='accounts.backends.EmailBackend') # backend='accounts.backends.EmailBackend' means we are using the EmailBackend for authentication, this is imp to specify because multiple backends like StaffIDBackend and PoliceIDBackend etc. are configured.
+            login(request, user, backend='accounts.backends.EmailBackend') # backend='accounts.backends.EmailBackend' means we are using the EmailBackend for authentication, IMP to specify as multiple backends(like EmailID or StaffID backend) are configured.
             messages.success(request, f"Welcome back, {user.full_name}!")
             return redirect('family:dashboard')
         else:
@@ -89,7 +87,7 @@ def login_hospital(request):
     if request.method == 'POST':
         form = HospitalLoginForm(request.POST)
         if form.is_valid():
-            staff_id = form.cleaned_data['staff_id'] 
+            staff_id = form.cleaned_data['staff_id']
             password = form.cleaned_data['password']
 
             # StaffIDBackend handles the lookup by staff_id
@@ -106,37 +104,12 @@ def login_hospital(request):
 
     return render(request, 'accounts/login_hospital.html', {'form': form})
 
-# --- Police login ---
-def login_police(request):
-    """Police login - uses police_id + password."""
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        form = PoliceLoginForm(request.POST)
-        if form.is_valid():
-            police_id = form.cleaned_data['police_id']
-            password = form.cleaned_data['password']
-
-            # PoliceIDBackend handles the lookup by police_id
-            user = authenticate(request, username=police_id, password=password)
-
-            if user and user.role == 'POLICE':
-                login(request, user, backend='accounts.backends.PoliceIDBackend')
-                messages.success(request, f"Welcome back, {user.full_name}!")
-                return redirect('police:dashboard')
-            else:
-                messages.error(request, "Invalid Police ID or password.")
-    else:
-        form = PoliceLoginForm()
-
-    return render(request, 'accounts/login_police.html', {'form': form})
 
 
 # ---- Logout view ----
-# NOTE : We're using Django's logout() function (imported at the top), but wrapping it in our own view to add the flash message for UI improvements.
+# NOTE : We're using Django's logout() function (imported at the top), and also adding the flash message for UI improvements.
 def logout_view(request):
-    logout(request)
+    logout(request) # Default Logout of Django
     messages.info(request, "You have been logged out.")
     return redirect('home')
 
@@ -145,15 +118,14 @@ def logout_view(request):
 
 # --- Family registration ---
 def register_family(request):
-    if request.user.is_authenticated: # if the user is already logged in, redirect to dashboard
+    if request.user.is_authenticated:
         return redirect('dashboard')
 
     if request.method == 'POST':
         form = FamilyRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            # must specify backend explicitly - multiple backends are configured
-            login(request, user, backend='accounts.backends.EmailBackend')
+        if form.is_valid(): # All Server Side Validations are Checked i.e, all def clean(...) methods triggered & Validated
+            user = form.save() # <--- CALLING THE def save(..) FUNCTION DEFINED IN FamilyRegistration forms.py to SAVE the credentials in DB
+            login(request, user, backend='accounts.backends.EmailBackend') # must specify backend explicitly - as multiple backends are configured for our proj.
             messages.success(request, f"Welcome to Khoj, {user.full_name}!")
             return redirect('family:dashboard')
     else:
@@ -168,8 +140,8 @@ def register_hospital(request):
 
     if request.method == 'POST':
         form = HospitalRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
+        if form.is_valid(): # Form Validations Checked
+            user = form.save() # Save Credentials to DB via Calling the def save(..) in forms.py in HospitalRegistartionForm
             login(request, user, backend='accounts.backends.EmailBackend')
             messages.success(request, f"Welcome to Khoj, {user.full_name}!")
             return redirect('hospital:dashboard')
@@ -178,22 +150,6 @@ def register_hospital(request):
 
     return render(request, 'accounts/register_hospital.html', {'form': form})
 
-# --- Police registration ---
-def register_police(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        form = PoliceRegistrationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user, backend='accounts.backends.EmailBackend')
-            messages.success(request, f"Welcome to Khoj, {user.full_name}!")
-            return redirect('police:dashboard')
-    else:
-        form = PoliceRegistrationForm()
-
-    return render(request, 'accounts/register_police.html', {'form': form})
 
 # --- Dashboard redirect according to user role ---
 @login_required
@@ -204,6 +160,4 @@ def dashboard_redirect(request):
         return redirect('family:dashboard')
     elif user.role == 'HOSPITAL':
         return redirect('hospital:dashboard')
-    elif user.role == 'POLICE':
-        return redirect('police:dashboard')
     return redirect('home')
