@@ -31,7 +31,7 @@ class MissingPerson(models.Model):
         ('FATHER', 'Father'), ('MOTHER', 'Mother'),
         ('BROTHER', 'Brother'), ('SISTER', 'Sister'),
         ('SPOUSE', 'Spouse'), ('SON', 'Son'), ('DAUGHTER', 'Daughter'),
-        ('RELATIVE', 'Other Relative'), ('FRIEND', 'Friend'),
+        ('RELATIVE', 'Relative'), ('FRIEND', 'Friend'),
         ('GUARDIAN', 'Guardian'), ('OTHER', 'Other'),
     ]
     # Connecting the user who filled the report as the linked family user
@@ -46,8 +46,8 @@ class MissingPerson(models.Model):
     height = models.PositiveIntegerField(help_text="Height in cm")
     weight = models.PositiveIntegerField(help_text="Weight in kg")
     blood_group = models.CharField(max_length=10, choices=BLOOD_GROUP_CHOICES, default='UNKNOWN')
-    eye_color = models.CharField(max_length=50)
-    hair_color = models.CharField(max_length=50)
+    eye_color = models.CharField(max_length=15)
+    hair_color = models.CharField(max_length=15)
     skin_tone = models.CharField(max_length=20, choices=SKIN_TONE_CHOICES, default='UNKNOWN')
     identifying_marks = models.TextField(blank=True)
     clothing_description = models.TextField(blank=True)
@@ -64,7 +64,7 @@ class MissingPerson(models.Model):
         help_text="Your relation to the missing person"
     )
     filer_contact = models.CharField(
-        max_length=15,
+        max_length=10,
         help_text="Your contact number"
     )
     filer_email = models.EmailField(
@@ -73,24 +73,24 @@ class MissingPerson(models.Model):
     )
 
     # ── location ────────────────────────────────────────────────
-    last_seen_location = models.CharField(max_length=255)
-    district = models.CharField(max_length=100)
+    last_seen_location = models.CharField(max_length=150)
+    district = models.CharField(max_length=50)
     last_seen_date = models.DateField()
 
     # photos - both required
-    passport_photo = models.ImageField(upload_to='missing/passport/') #missing/passport/ is the folder where the passport photo will be stored in the media directory.which is presently set to /media/ in settings.py. So the full path will be /media/missing/passport/
+    passport_photo = models.ImageField(upload_to='missing/passport/')
     full_body_photo = models.ImageField(upload_to='missing/fullbody/')
 
     # kept for compatibility - old contact_number field
     contact_number = models.CharField(max_length=15, blank=True)
 
     # police info - optional
-    fir_number = models.CharField(max_length=100, blank=True)
-    police_station_name = models.CharField(max_length=200, blank=True)
+    fir_number = models.CharField(max_length=30, blank=True)
+    police_station_name = models.CharField(max_length=100, blank=True)
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='ACTIVE')
-    created_at = models.DateTimeField(auto_now_add=True) #auto_now_add=True means that the field will be set to the current date and time when the object is first created. It will not change on subsequent updates.
-    updated_at = models.DateTimeField(auto_now=True) #auto_now=True means that the field will be set to the current date and time every time the object is saved. It will update on subsequent updates.
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.person_name} - {self.district} ({self.status})"
@@ -102,11 +102,11 @@ class MissingPerson(models.Model):
 class CaseUpdate(models.Model):
     """Private notes/clues added by the family. Not public sightings."""
 
-    linked_missing_person = models.ForeignKey( # linked_missing_person is a ForeignKey to the MissingPerson model. This means that each CaseUpdate is associated with one MissingPerson. The on_delete=models.CASCADE argument means that if the linked MissingPerson is deleted, all associated CaseUpdates will also be deleted. The related_name='case_updates' argument allows us to access all CaseUpdates for a given MissingPerson using missing_person.case_updates.all().
+    linked_missing_person = models.ForeignKey(
         MissingPerson, on_delete=models.CASCADE, related_name='case_updates'    # related_name for reverse ForeignKey lookup, so we can move from MissingPerson -> CaseUpdate (Opposite of where the FK was defined).
     )
     note = models.TextField()
-    optional_image = models.ImageField(upload_to='updates/', blank=True, null=True) #optional_image is an ImageField that allows the family to upload an optional image related to the case update. The upload_to='updates/' argument specifies that the image will be stored in the 'updates/' directory within the media directory. The blank=True and null=True arguments allow this field to be optional, meaning that a CaseUpdate can be created without an image.
+    optional_image = models.ImageField(upload_to='updates/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
